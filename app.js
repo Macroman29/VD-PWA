@@ -10,17 +10,17 @@ class WarningSystem {
             safe: { 
                 color: '#00ff00', 
                 beepInterval: 1000,
-                video: './videos/car-no-obstacle.mp4'
+                video: 'https://macroman29.github.io/VD-PWA/videos/car-no-obstacle.mp4'
             },
             warning: { 
                 color: '#ffff00', 
                 beepInterval: 500,
-                video: './videos/car-medium-distance.mp4'
+                video: 'https://macroman29.github.io/VD-PWA/videos/car-medium-distance.mp4'
             },
             danger: { 
                 color: '#ff0000', 
                 beepInterval: 200,
-                video: './videos/car-close-obstacle.mp4'
+                video: 'https://macroman29.github.io/VD-PWA/videos/car-close-obstacle.mp4'
             }
         };
         this.initializeGraphics();
@@ -79,14 +79,36 @@ class WarningSystem {
     }
 
     updateGraphics(level, distance) {
-        // Temporarily disable video loading for testing
-        // Only update colors
+        // Only change video if the warning level has changed
+        if (this.currentLevel !== level) {
+            this.currentLevel = level;
+            
+            // Log for debugging
+            console.log('Changing video to:', this.warningLevels[level].video);
+            
+            this.sceneVideo.src = this.warningLevels[level].video;
+            this.sceneVideo.load();
+            
+            // Add error handling for video
+            this.sceneVideo.onerror = (e) => {
+                console.error('Video error:', e);
+            };
+            
+            // Add loading event
+            this.sceneVideo.onloadeddata = () => {
+                console.log('Video loaded successfully');
+            };
+            
+            this.sceneVideo.play()
+                .then(() => console.log('Video playing'))
+                .catch(e => console.log('Video autoplay failed:', e));
+        }
+        
+        // Update overlay color
         const baseColor = this.warningLevels[level].color;
         const opacity = 0.3;
         this.graphicsContainer.style.backgroundColor = baseColor;
         this.graphicsContainer.style.opacity = opacity;
-        
-        console.log(`Warning level: ${level}, Distance: ${distance}`);
     }
 
     updateBeep(distance) {
