@@ -10,17 +10,17 @@ class WarningSystem {
             safe: { 
                 color: '#00ff00', 
                 beepInterval: 1000,
-                video: '/videos/car-no-obstacle.mp4'
+                video: '/VD-PWA/videos/car-no-obstacle.mp4'
             },
             warning: { 
                 color: '#ffff00', 
                 beepInterval: 500,
-                video: '/videos/car-medium-distance.mp4'
+                video: '/VD-PWA/videos/car-medium-distance.mp4'
             },
             danger: { 
                 color: '#ff0000', 
                 beepInterval: 200,
-                video: '/videos/car-close-obstacle.mp4'
+                video: '/VD-PWA/videos/car-close-obstacle.mp4'
             }
         };
         this.initializeGraphics();
@@ -101,32 +101,46 @@ class WarningSystem {
 // Initialize the warning system
 const warningSystem = new WarningSystem();
 
-// Handle Excel file input
+// Add console logs for debugging
 document.getElementById('excel-input').addEventListener('change', (event) => {
+    console.log('File selected');
     const file = event.target.files[0];
     const reader = new FileReader();
 
     reader.onload = function(e) {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-        const jsonData = XLSX.utils.sheet_to_json(firstSheet);
-        
-        // Initialize beep system on user interaction
-        warningSystem.initializeBeep();
+        console.log('File loaded');
+        try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            console.log('Workbook loaded:', workbook);
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+            console.log('Parsed data:', jsonData);
+            
+            // Initialize beep system on user interaction
+            warningSystem.initializeBeep();
 
-        // Simulate real-time updates
-        let index = 0;
-        const updateInterval = setInterval(() => {
-            if (index >= jsonData.length) {
-                clearInterval(updateInterval);
-                return;
-            }
+            // Simulate real-time updates
+            let index = 0;
+            const updateInterval = setInterval(() => {
+                if (index >= jsonData.length) {
+                    clearInterval(updateInterval);
+                    console.log('Simulation complete');
+                    return;
+                }
 
-            const row = jsonData[index];
-            warningSystem.updateWarning(row.distance, row.speed);
-            index++;
-        }, 1000); // Update every second
+                const row = jsonData[index];
+                console.log('Processing row:', row);
+                warningSystem.updateWarning(row.distance, row.speed);
+                index++;
+            }, 1000); // Update every second
+        } catch (error) {
+            console.error('Error processing file:', error);
+        }
+    };
+
+    reader.onerror = function(e) {
+        console.error('Error reading file:', e);
     };
 
     reader.readAsArrayBuffer(file);
