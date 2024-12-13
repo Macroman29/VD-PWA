@@ -1,11 +1,11 @@
 {
     "name": "Car Distance Warning System",
     "short_name": "CarWarning",
-    "start_url": "/",
+    "start_url": "/VD-PWA/",
     "display": "standalone",
     "background_color": "#000000",
     "theme_color": "#000000",
-    "scope": "/",
+    "scope": "/VD-PWA/",
     "permissions": ["video"],
     "icons": [
         {
