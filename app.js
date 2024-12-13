@@ -83,8 +83,6 @@ class WarningSystem {
         if (this.currentLevel !== level) {
             this.currentLevel = level;
             
-            console.log('Changing video to:', this.warningLevels[level].video);
-            
             this.sceneVideo.src = this.warningLevels[level].video;
             this.sceneVideo.load();
             
@@ -101,17 +99,27 @@ class WarningSystem {
                 .catch(e => console.log('Video autoplay failed:', e));
         }
         
-        // Update overlay color - Modified this part
+        // Update overlay color
         const baseColor = this.warningLevels[level].color;
-        // Changed opacity to be more visible
-        const opacity = 0.5;  // Increased from 0.3
+        const opacity = 0.6;  // Increased opacity
+        
+        // Apply color to both body and container
         document.body.style.backgroundColor = baseColor;
-        this.graphicsContainer.style.backgroundColor = baseColor;
-        // Apply color overlay to the entire container
+        document.body.style.transition = 'background-color 0.3s ease';
+        
+        // Apply overlay with gradient
         this.graphicsContainer.style.background = `linear-gradient(
             rgba(${this.hexToRgb(baseColor)}, ${opacity}),
             rgba(${this.hexToRgb(baseColor)}, ${opacity})
         )`;
+        
+        // Ensure the overlay covers everything
+        this.graphicsContainer.style.position = 'fixed';
+        this.graphicsContainer.style.top = '0';
+        this.graphicsContainer.style.left = '0';
+        this.graphicsContainer.style.width = '100vw';
+        this.graphicsContainer.style.height = '100vh';
+        this.graphicsContainer.style.zIndex = '2';
     }
 
     updateBeep(distance) {
