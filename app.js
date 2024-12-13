@@ -10,17 +10,17 @@ class WarningSystem {
             safe: { 
                 color: '#00ff00', 
                 beepInterval: 1000,
-                video: '/VD-PWA/videos/car-no-obstacle.mp4'
+                video: './videos/car-no-obstacle.mp4'
             },
             warning: { 
                 color: '#ffff00', 
                 beepInterval: 500,
-                video: '/VD-PWA/videos/car-medium-distance.mp4'
+                video: './videos/car-medium-distance.mp4'
             },
             danger: { 
                 color: '#ff0000', 
                 beepInterval: 200,
-                video: '/VD-PWA/videos/car-close-obstacle.mp4'
+                video: './videos/car-close-obstacle.mp4'
             }
         };
         this.initializeGraphics();
@@ -59,8 +59,13 @@ class WarningSystem {
     }
 
     updateWarning(distance, speed) {
-        this.speedElement.textContent = speed.toFixed(1);
-        this.distanceElement.textContent = distance.toFixed(1);
+        if (distance === undefined || speed === undefined) {
+            console.error('Invalid data:', { distance, speed });
+            return;
+        }
+        
+        this.speedElement.textContent = Number(distance).toFixed(1);
+        this.distanceElement.textContent = Number(speed).toFixed(1);
 
         const warningLevel = this.calculateWarningLevel(distance);
         this.updateGraphics(warningLevel, distance);
@@ -74,20 +79,14 @@ class WarningSystem {
     }
 
     updateGraphics(level, distance) {
-        // Only change video if the warning level has changed
-        if (this.currentLevel !== level) {
-            this.currentLevel = level;
-            this.sceneVideo.src = this.warningLevels[level].video;
-            this.sceneVideo.load();
-            this.sceneVideo.play()
-                .catch(e => console.log('Video autoplay failed:', e));
-        }
-        
-        // Update overlay color
+        // Temporarily disable video loading for testing
+        // Only update colors
         const baseColor = this.warningLevels[level].color;
-        const opacity = 0.3; // Reduced opacity for overlay
+        const opacity = 0.3;
         this.graphicsContainer.style.backgroundColor = baseColor;
         this.graphicsContainer.style.opacity = opacity;
+        
+        console.log(`Warning level: ${level}, Distance: ${distance}`);
     }
 
     updateBeep(distance) {
@@ -122,15 +121,17 @@ document.getElementById('excel-input').addEventListener('change', (event) => {
             const jsonData = XLSX.utils.sheet_to_json(firstSheet);
             console.log('Parsed data:', jsonData);
             
+            // Validate data
+            jsonData.forEach((row, index) => {
+                if (typeof row.distance !== 'number' || typeof row.speed !== 'number') {
+                    throw new Error(`Invalid data at row ${index + 1}. Both distance and speed must be numbers.`);
+                }
+            });
+
             if (jsonData.length === 0) {
                 throw new Error('No data found in Excel file');
             }
 
-            // Validate data format
-            if (!jsonData[0].hasOwnProperty('distance') || !jsonData[0].hasOwnProperty('speed')) {
-                throw new Error('Excel file must have "distance" and "speed" columns');
-            }
-            
             // Initialize beep system on user interaction
             warningSystem.initializeBeep();
 
