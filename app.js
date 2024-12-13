@@ -10,17 +10,17 @@ class WarningSystem {
             safe: { 
                 color: '#00ff00', 
                 beepInterval: 1000,
-                video: 'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4'
+                video: '/VD-PWA/videos/car-no-obstacle.mp4'
             },
             warning: { 
                 color: '#ffff00', 
                 beepInterval: 500,
-                video: 'https://test-videos.co.uk/vids/jellyfish/mp4/h264/360/Jellyfish_360_10s_1MB.mp4'
+                video: '/VD-PWA/videos/car-medium-distance.mp4'
             },
             danger: { 
                 color: '#ff0000', 
                 beepInterval: 200,
-                video: 'https://test-videos.co.uk/vids/sintel/mp4/h264/360/Sintel_360_10s_1MB.mp4'
+                video: '/VD-PWA/videos/car-close-obstacle.mp4'
             }
         };
         this.initializeGraphics();
@@ -83,33 +83,32 @@ class WarningSystem {
         if (this.currentLevel !== level) {
             this.currentLevel = level;
             
+            // Log for debugging
             console.log('Changing video to:', this.warningLevels[level].video);
             
             this.sceneVideo.src = this.warningLevels[level].video;
             this.sceneVideo.load();
             
+            // Add error handling for video
             this.sceneVideo.onerror = (e) => {
-                console.error('Video error:', e.target.error);
+                console.error('Video error:', e);
             };
             
+            // Add loading event
             this.sceneVideo.onloadeddata = () => {
                 console.log('Video loaded successfully');
-                this.sceneVideo.play()
-                    .then(() => console.log('Video playing'))
-                    .catch(e => {
-                        console.error('Video autoplay failed:', e);
-                        // Try playing on user interaction
-                        document.addEventListener('click', () => {
-                            this.sceneVideo.play().catch(console.error);
-                        }, { once: true });
-                    });
             };
+            
+            this.sceneVideo.play()
+                .then(() => console.log('Video playing'))
+                .catch(e => console.log('Video autoplay failed:', e));
         }
         
-        // Update overlay color using the ::after pseudo-element
+        // Update overlay color
         const baseColor = this.warningLevels[level].color;
-        this.graphicsContainer.style.setProperty('--overlay-color', baseColor);
-        this.graphicsContainer.style.setProperty('--overlay-opacity', '0.3');
+        const opacity = 0.3;
+        this.graphicsContainer.style.backgroundColor = baseColor;
+        this.graphicsContainer.style.opacity = opacity;
     }
 
     updateBeep(distance) {
