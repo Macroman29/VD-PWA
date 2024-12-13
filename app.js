@@ -103,19 +103,33 @@ const warningSystem = new WarningSystem();
 
 // Add console logs for debugging
 document.getElementById('excel-input').addEventListener('change', (event) => {
-    console.log('File selected');
+    console.log('File selected:', event.target.files[0].name); // Log file name
     const file = event.target.files[0];
     const reader = new FileReader();
 
     reader.onload = function(e) {
-        console.log('File loaded');
+        console.log('File loaded, result type:', typeof e.target.result);
         try {
             const data = new Uint8Array(e.target.result);
+            console.log('Data converted to Uint8Array, length:', data.length);
+            
             const workbook = XLSX.read(data, { type: 'array' });
-            console.log('Workbook loaded:', workbook);
+            console.log('Workbook sheets:', workbook.SheetNames);
+            
             const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            console.log('First sheet:', firstSheet);
+            
             const jsonData = XLSX.utils.sheet_to_json(firstSheet);
             console.log('Parsed data:', jsonData);
+            
+            if (jsonData.length === 0) {
+                throw new Error('No data found in Excel file');
+            }
+
+            // Validate data format
+            if (!jsonData[0].hasOwnProperty('distance') || !jsonData[0].hasOwnProperty('speed')) {
+                throw new Error('Excel file must have "distance" and "speed" columns');
+            }
             
             // Initialize beep system on user interaction
             warningSystem.initializeBeep();
@@ -133,17 +147,24 @@ document.getElementById('excel-input').addEventListener('change', (event) => {
                 console.log('Processing row:', row);
                 warningSystem.updateWarning(row.distance, row.speed);
                 index++;
-            }, 1000); // Update every second
+            }, 1000);
         } catch (error) {
             console.error('Error processing file:', error);
+            alert('Error processing file: ' + error.message);
         }
     };
 
     reader.onerror = function(e) {
         console.error('Error reading file:', e);
+        alert('Error reading file');
     };
 
-    reader.readAsArrayBuffer(file);
+    try {
+        reader.readAsArrayBuffer(file);
+    } catch (error) {
+        console.error('Error starting file read:', error);
+        alert('Error starting file read');
+    }
 });
 
 // Service Worker Registration
