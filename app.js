@@ -83,18 +83,15 @@ class WarningSystem {
         if (this.currentLevel !== level) {
             this.currentLevel = level;
             
-            // Log for debugging
             console.log('Changing video to:', this.warningLevels[level].video);
             
             this.sceneVideo.src = this.warningLevels[level].video;
             this.sceneVideo.load();
             
-            // Add error handling for video
             this.sceneVideo.onerror = (e) => {
                 console.error('Video error:', e);
             };
             
-            // Add loading event
             this.sceneVideo.onloadeddata = () => {
                 console.log('Video loaded successfully');
             };
@@ -104,11 +101,17 @@ class WarningSystem {
                 .catch(e => console.log('Video autoplay failed:', e));
         }
         
-        // Update overlay color
+        // Update overlay color - Modified this part
         const baseColor = this.warningLevels[level].color;
-        const opacity = 0.3;
+        // Changed opacity to be more visible
+        const opacity = 0.5;  // Increased from 0.3
+        document.body.style.backgroundColor = baseColor;
         this.graphicsContainer.style.backgroundColor = baseColor;
-        this.graphicsContainer.style.opacity = opacity;
+        // Apply color overlay to the entire container
+        this.graphicsContainer.style.background = `linear-gradient(
+            rgba(${this.hexToRgb(baseColor)}, ${opacity}),
+            rgba(${this.hexToRgb(baseColor)}, ${opacity})
+        )`;
     }
 
     updateBeep(distance) {
@@ -116,6 +119,19 @@ class WarningSystem {
         const intensity = 1 - (distance / this.maxDistance);
         this.gainNode.gain.value = intensity * 0.5;
         this.oscillator.frequency.value = 440 + (660 * intensity);
+    }
+
+    // Add this helper method to convert hex colors to RGB
+    hexToRgb(hex) {
+        // Remove the # if present
+        hex = hex.replace('#', '');
+        
+        // Convert to RGB values
+        const r = parseInt(hex.substring(0, 2), 16);
+        const g = parseInt(hex.substring(2, 4), 16);
+        const b = parseInt(hex.substring(4, 6), 16);
+        
+        return `${r}, ${g}, ${b}`;
     }
 }
 
